@@ -1,0 +1,6 @@
+# .gitignore for Twitch Chatbot project
+
+node_modules
+.DS_Store
+
+.env

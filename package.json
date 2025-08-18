@@ -1,0 +1,23 @@
+{
+  "name": "twitch_chatbot",
+  "version": "1.0.0",
+  "description": "Chatbot for Twitch streams.",
+  "main": "bot.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/elias-berg/Twitch_Chatbot.git"
+  },
+  "author": "Elias Berg",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/elias-berg/Twitch_Chatbot/issues"
+  },
+  "homepage": "https://github.com/elias-berg/Twitch_Chatbot#readme",
+  "dependencies": {
+    "dotenv": "^17.2.1",
+    "ws": "^8.18.3"
+  }
+}
