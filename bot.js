@@ -1,18 +1,19 @@
-import WebSocket from 'ws';
 import dotenv from 'dotenv';
+
 dotenv.config();
 
 // This is a simple Twitch chat bot that listens to messages in a channel and responds to "HeyGuys" with "VoHiYo".
 const BOT_USER_ID = process.env.BOT_USER_ID;
 
-// The OAuth token can be generated from the Twitch Developer Console
+// The access token can be generated from the auth script
 // https://dev.twitch.tv/console/apps
-// The OAuth token is a string that starts with "oauth:"
-// Example: "oauth:1234567890abcdef1234567890abcdef1234567890" (this is not a real OAuth token, just an example)
+// Example: "1234567890abcdef1234567890abcdef1234567890" (this is not a real access token, just an example)
 // The OAuth token needs to have the scopes user:bot, user:read:chat, user:write:chat
-// You can generate it using the Twitch Token Generator
-// https://twitchtokengenerator.com/
-const OAUTH_TOKEN = process.env.OAUTH_TOKEN;
+const ACCESS_TOKEN = process.env.ACCESS_TOKEN;
+
+const AuthHeader = {
+  "Authorization": `Bearer ${ACCESS_TOKEN}`,
+};
 
 // The Client ID can be found in the Twitch Developer Console under your application
 // https://dev.twitch.tv/console/apps
@@ -43,12 +44,15 @@ var websocketSessionID;
 // WebSocket will persist the application loop until you exit the program forcefully
 
 async function getAuth() {
+  if (ACCESS_TOKEN === undefined || ACCESS_TOKEN === "") {
+    console.error("No ACCESS_TOKEN found in .env");
+    process.exit(1);
+  }
+
 	// https://dev.twitch.tv/docs/authentication/validate-tokens/#how-to-validate-a-token
 	let response = await fetch('https://id.twitch.tv/oauth2/validate', {
 		method: 'GET',
-		headers: {
-			'Authorization': 'OAuth ' + OAUTH_TOKEN
-		}
+		headers: AuthHeader
 	});
 
 	if (response.status != 200) {
@@ -64,15 +68,22 @@ async function getAuth() {
 function startWebSocketClient() {
 	let websocketClient = new WebSocket(EVENTSUB_WEBSOCKET_URL);
 
-	websocketClient.on('error', console.error);
+  websocketClient.onerror = (error) => {
+    console.error("WebSocket error: ", error);
+  }
 
-	websocketClient.on('open', () => {
-		console.log('WebSocket connection opened to ' + EVENTSUB_WEBSOCKET_URL);
-	});
+  websocketClient.onopen = () => {
+    console.log("WebSocket connection established.");
+  }
 
-	websocketClient.on('message', (data) => {
-		handleWebSocketMessage(JSON.parse(data.toString()));
-	});
+  websocketClient.onclose = () => {
+    console.log("WebSocket connection closed.");
+  }
+
+  websocketClient.onmessage = (ev) => {
+    console.log("WebSocket message received: " + ev.data);
+		handleWebSocketMessage(JSON.parse(ev.data.toString()));
+  }
 
 	return websocketClient;
 }
@@ -91,12 +102,16 @@ function handleWebSocketMessage(data) {
 					// First, print the message to the program's console.
 					console.log(`MSG #${data.payload.event.broadcaster_user_login} <${data.payload.event.chatter_user_login}> ${data.payload.event.message.text}`);
 
-					// Then check to see if that message was "HeyGuys"
-					if (data.payload.event.message.text.trim() == "HeyGuys") {
-						// If so, send back "VoHiYo" to the chatroom
-						sendChatMessage("VoHiYo")
-					}
-
+          // TODO: Add more commands here
+          const payload = data.payload.event.message.text.trim().toLowerCase();
+          switch (payload) {
+            case "heyguys":
+              sendChatMessage("VoHiYo");
+              break;
+            default:
+              // do nothing
+              break;
+          }
 					break;
 			}
 			break;
@@ -107,7 +122,7 @@ async function sendChatMessage(chatMessage) {
 	let response = await fetch('https://api.twitch.tv/helix/chat/messages', {
 		method: 'POST',
 		headers: {
-			'Authorization': 'Bearer ' + OAUTH_TOKEN,
+      ...AuthHeader,
 			'Client-Id': CLIENT_ID,
 			'Content-Type': 'application/json'
 		},
@@ -132,7 +147,7 @@ async function registerEventSubListeners() {
 	let response = await fetch('https://api.twitch.tv/helix/eventsub/subscriptions', {
 		method: 'POST',
 		headers: {
-			'Authorization': 'Bearer ' + OAUTH_TOKEN,
+      ...AuthHeader,
 			'Client-Id': CLIENT_ID,
 			'Content-Type': 'application/json'
 		},
@@ -150,13 +165,12 @@ async function registerEventSubListeners() {
 		})
 	});
 
+	const data = await response.json();
 	if (response.status != 202) {
-		let data = await response.json();
 		console.error("Failed to subscribe to channel.chat.message. API call returned status code " + response.status);
 		console.error(data);
 		process.exit(1);
 	} else {
-		const data = await response.json();
 		console.log(`Subscribed to channel.chat.message [${data.data[0].id}]`);
 	}
 }
