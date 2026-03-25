@@ -36,7 +36,8 @@ This app uses Bearer auth rather than the quick-setup OAuth found in the Twitch 
 1. Run `npm run auth`.
 2. A web page should open, asking you to authenticate your bot account.
 3. Click "Authorize" and you should then see output in your console you used to run the command from step 1.
-4. Copy the output into the respective `.env` variables, e.g. `access_code` into your `.env`'s `ACCESS_CODE`.
+
+You should see the output got copied into the respective `.env` variables, e.g. `access_code` into your `.env`'s `ACCESS_CODE`.
 
 ## Activate: Chatbot!
 
