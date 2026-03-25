@@ -5,8 +5,10 @@
   "main": "bot.js",
   "type": "module",
   "scripts": {
-    "bot": "node bot.js",
-    "auth": "node auth.js"
+    "bot": "node chatbot.js",
+    "auth": "node auth.js",
+    "test-server": "node test-server.js",
+    "test-bot": "node test-bot.js"
   },
   "repository": {
     "type": "git",

@@ -1,6 +1,8 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import open from 'open';
+import fs from 'fs';
+import path from 'path';
 
 dotenv.config();
 
@@ -31,7 +33,13 @@ app.get('/', async (req, res) => {
   const data = await response.json();
   console.log(data);
 
-  // TODO: Save the tokens into a basic DB or encrypted file
+  // TODO: Save the tokens into a basic DB
+  // Define a file path in the current directory
+  const filePath = path.join('.env');
+  let contents = fs.readFileSync(filePath, 'utf-8');
+  contents = contents.replace(/ACCESS_TOKEN=.*/, `ACCESS_TOKEN=${data.access_token}`);
+  contents = contents.replace(/REFRESH_TOKEN=.*/, `REFRESH_TOKEN=${data.refresh_token}`);
+  fs.writeFileSync(filePath, contents);
 
   // TODO: Add in refresh token handling
 
