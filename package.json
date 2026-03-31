@@ -7,6 +7,7 @@
   "scripts": {
     "bot": "node chatbot.js",
     "auth": "node auth.js",
+    "refresh": "node refresh.js",
     "test-server": "node test-server.js",
     "test-bot": "node test-bot.js"
   },

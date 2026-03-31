@@ -14,7 +14,7 @@ This app uses Bearer auth rather than the quick-setup OAuth found in the Twitch 
 ### Twitch App
 
 1. Create a copy of the `sample.env` file named `.env`.
-2. Create your twitch app via [Twitch Developer Portal](https://dev.twitch.tv/).
+2. Create your Twitch app via [Twitch Developer Portal](https://dev.twitch.tv/).
 3. Create an application.
 
 - Make sure the callback URLs include `http://localhost:3000`.
@@ -33,11 +33,21 @@ This app uses Bearer auth rather than the quick-setup OAuth found in the Twitch 
 
 ### Authorization
 
+#### Initial Access Token
+
 1. Run `npm run auth`.
 2. A web page should open, asking you to authenticate your bot account.
 3. Click "Authorize" and you should then see output in your console you used to run the command from step 1.
 
-You should see the output got copied into the respective `.env` variables, e.g. `access_code` into your `.env`'s `ACCESS_CODE`.
+You should see the output got copied into the respective `.env` variables, e.g. `access_token` -> `ACCESS_TOKEN`.
+
+#### Refreshing the Access Token
+
+You may notice that, after a while, your authorization expires (you'll get 401 status codes when trying to run the bot). When this happens, run:
+
+`npm run refresh`
+
+That command uses your `REFRESH_TOKEN` to refresh your `ACCESS_TOKEN`. You should see your `.env` get updated with the new tokens! Now you can proceed to run the bot.
 
 ## Activate: Chatbot!
 
@@ -56,9 +66,16 @@ Double-check your app's redirect URIs. Chances are you didn't list `http://local
 
 This one appears when running `npm run bot` if you forgot to set your `ACCESS_TOKEN` or if it expired.
 
+### `npm run bot` returns a 401 error code
+
+This means your authorization expired. Run `npm run refresh`.
+
+### `npm run refresh` returns a 400 error code
+
+Double-check your REFRESH_TOKEN in your `.env` file. Chances are you need a new one by re-running the auth via `npm run auth`.
+
 ## To Do List
 
 - Add instructions on how to get the `BOT_USER_ID` and `CHAT_CHANNEL_USER_ID`.
 - Add a simple DB rather than print out the access_token.
 - Modularize the commands the bot can respond to in a configurable way.
-- Start adding command actions.
